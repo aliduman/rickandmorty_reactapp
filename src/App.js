@@ -2,6 +2,7 @@ import React from 'react';
 import {BrowserRouter as Router, Route, Link} from "react-router-dom";
 import debounce from "lodash.debounce";
 import 'bootstrap/dist/css/bootstrap.css';
+import loader from './loader.gif';
 import './App.css';
 
 class Main extends React.Component {
@@ -9,34 +10,48 @@ class Main extends React.Component {
         return (
             <Router>
                 <Route path="/" exact component={Home}/>
-                <Route path="/character/:id" component={CharacterDetail}/>
+                <Route path="/:page" exact component={Home}/>
+                <Route path="/character/:id/:page" component={CharacterDetail}/>
             </Router>
         )
     }
 }
 
 class Home extends React.Component {
-
     getCharacters = () => {
+        const loader = document.getElementById('loader');
+        if (loader) {
+            loader.classList.remove('d-none');
+            loader.classList.add('d-flex');
+        }
         fetch('https://rickandmortyapi.com/api/character/?page=' + this.state.page)
             .then(res => res.json())
             .then(res => {
-                console.log(res.results);
-                let page = this.state.page;
+                res.results.map(item => item.pageNumber = this.state.page);
                 this.setState({
-                    page: ++page,
                     characters: [
                         ...this.state.characters,
                         ...res.results]
-                })
+                });
+                if (loader) {
+                    loader.classList.remove('d-flex');
+                    loader.classList.add('d-none');
+                }
             });
     };
 
     constructor(props) {
         super(props);
 
+        // Eğer page parametresi varsa değişkene ekliyoruz.
+        const urlParams = this.props.match.params;
+        let page = 1;
+        if (urlParams.hasOwnProperty('page')) {
+            page = parseInt(urlParams.page);
+        }
+
         this.state = {
-            page: 1,
+            page: page,
             characters: []
         };
 
@@ -45,34 +60,42 @@ class Home extends React.Component {
                 window.innerHeight + document.documentElement.scrollTop + 200
                 >= document.documentElement.offsetHeight
             ) {
-                console.log(window.innerHeight);
-                console.log(document.documentElement.scrollTop);
+                let page = this.state.page;
+                this.setState({
+                    page: ++page
+                });
                 this.getCharacters();
             }
         }, 200);
     }
+
 
     componentDidMount() {
         this.getCharacters();
     }
 
     componentWillUnmount() {
+        this.setState({
+            page: 1,
+            characters: []
+        });
     }
 
     render() {
         return (
-            <div className={"App"}>
-                <header className={"App-header text-center"}>
-                    <div className={'container'}>
-                        <div className={'row'}>
-                            <div className="col-sm-12">
-                                <h1> All Characters</h1>
-                            </div>
-                            {Card(this.state.characters)}
-                        </div>
+            <div className={'container'}>
+                <div className={'row'}>
+                    <div className="col-sm-12 mb-4">
+                        <h1> All Characters</h1>
                     </div>
-                </header>
-            </div>)
+                    {Card(this.state.characters, this.state.page)}
+                    <div id="loader" className={'d-flex justify-content-center align-items-center'}>
+                        <img src={loader} alt="{'loader'}" className={'mr-3'}/>
+                        Loading more..
+                    </div>
+                </div>
+            </div>
+        )
     }
 }
 
@@ -122,15 +145,15 @@ class CharacterDetail extends React.Component {
 
     componentWillUnmount() {
         this.setState({
-            user: this.props,
+            user: [],
             episodes: []
-        })
+        });
     }
 
     episodeListView() {
         const list = [];
         this.state.episodes.forEach((item, index) => {
-                return list.push(<li className={'list-group-item'} key={index}>{item.name}</li>)
+                return list.push(<li className={'list-group-item'} key={index}>{index + 1} - {item.name}</li>)
             }
         );
         return list;
@@ -145,7 +168,7 @@ class CharacterDetail extends React.Component {
                     <div className={'row'}>
                         <div className={'col-sm-3'}>
                             <img className={'card-img-top mb-3'} src={`${image}`} alt=""/>
-                            <Link to={'/'} className={'btn btn-primary'}> Back</Link>
+                            <Link to={'/' + this.props.match.params.page} className={'btn btn-primary'}> Back</Link>
                         </div>
                         <div className={'col-sm-9'}>
                             <h1>{name}</h1>
@@ -174,7 +197,7 @@ function Card(data) {
                     <div className={"card-body"}>
                         <h5 className={"card-title"}>{data[i].name}</h5>
                         <p className={"card-text"}>{data[i].location.name}</p>
-                        <Link to={'/character/' + data[i].id}>View Character</Link>
+                        <Link to={'/character/' + data[i].id + '/' + data[i].pageNumber}>View Character</Link>
                     </div>
                 </div>
             </div>
