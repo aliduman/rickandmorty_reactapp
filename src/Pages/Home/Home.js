@@ -56,7 +56,6 @@ class Home extends React.Component {
         }, 200);
     }
 
-
     componentDidMount() {
         this.getCharacters();
     }
@@ -75,12 +74,19 @@ class Home extends React.Component {
                     <div className="col-sm-12 mb-4">
                         <h1> All Characters</h1>
                     </div>
-                    {Card(this.state.characters, this.state.page)}
-                    <div id="loader" className={'d-flex justify-content-center align-items-center'}>
-                        <img src={loader} alt="{'loader'}" className={'mr-3'}/>
-                        Loading more..
-                    </div>
                 </div>
+                {/* /.row */}
+
+                <div className={'row'}>
+                    {Card(this.state.characters, this.state.page)}
+                </div>
+                {/* /.row */}
+
+                <div id="loader" className={'d-flex justify-content-center align-items-center'}>
+                    <img src={loader} alt="{'loader'}" className={'mr-3'}/>
+                    Loading more..
+                </div>
+                {/* loader */}
             </div>
         )
     }
@@ -92,13 +98,17 @@ function Card(data) {
         box.push(
             <div className={'col-sm-3 mb-3'} key={i}>
                 <img className={'card-img-top'} src={`${data[i].image}`} alt=""/>
+                {/* /.card-img-top */}
                 <div className={"card"}>
                     <div className={"card-body"}>
                         <h5 className={"card-title"}>{data[i].name}</h5>
                         <p className={"card-text"}>{data[i].location.name}</p>
-                        <Link to={'/character/' + data[i].id + '/' + data[i].pageNumber} className={'btn btn-success btn-sm'}>View Character</Link>
+                        <Link to={'/character/' + data[i].id + '/' + data[i].pageNumber}
+                              className={'btn btn-success btn-sm'}>View Character</Link>
                     </div>
+                    {/* /.card-body */}
                 </div>
+                {/* /.card */}
             </div>
         )
     }
