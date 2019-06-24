@@ -18,7 +18,7 @@ class CharacterDetail extends React.Component {
         }
     }
 
-    // Karakterleri listelinyoruz.
+    // Karakterleri listeliyoruz.
     episodeListView() {
         const list = [];
         this.state.episodes.forEach((item, index) => {
